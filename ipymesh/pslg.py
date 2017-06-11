@@ -19,14 +19,30 @@ class PSLGEditor(widgets.DOMWidget):
     Ly = Float(1.0).tag(sync=True)
     x0 = Float(0.0).tag(sync=True)
     y0 = Float(0.0).tag(sync=True)
-    points = List().tag(sync=True)
+    vertices = List().tag(sync=True)
+    vertexFlags = List().tag(sync=True)
+    segments = List().tag(sync=True)
+    segmentFlags = List().tag(sync=True)
+    regions = List().tag(sync=True)
+    regionsFlags = List().tag(sync=True)
+    holes = List().tag(sync=True)
+    boundaryTypes = List().tag(sync=True)
+    regionTypes = List().tag(sync=True)
 
-    def __init__(self, points=[[300,300]], width=600, height=600, Lx=1.0, Ly=1.0, x0=0.0, y0=0.0, *args, **kwargs):
+    def __init__(self, vertices=[[300,300]], vertexFlags=[1],segments=[],segmentFlags=[],regions=[],regionFlags=[],holes=[],boundaryTypes=[1,0],regionTypes=[1,0],width=600, height=600, Lx=1.0, Ly=1.0, x0=0.0, y0=0.0, *args, **kwargs):
         super(PSLGEditor, self).__init__(*args, **kwargs)
-        self.points=points
+        self.vertices=vertices
+        self.vertexFlags=vertexFlags
+        self.segments=segments
+        self.segmentFlags=segmentFlags
+        self.regions=regions
+        self.regionsFlags=regionFlags
+        self.holes=holes
         self.width=width
         self.height=height
         self.Lx=Lx
         self.Ly=Ly
         self.x0=x0
         self.y0=y0
+        self.boundaryTypes = boundaryTypes
+        self.regionTypes = regionTypes

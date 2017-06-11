@@ -31,11 +31,27 @@ var PSLGEditorModel = widgets.DOMWidgetModel.extend({
         Ly: 1.0,
         x0: 0.0,
         y0: 0.0,
-        points: [],
+        vertices: [],
+        vertexFlags: [],
+        segments: [],
+        segmentFlags: [],
+        regions: [],
+        regionFlags: [],
+        holes: [],
+        boundaryTypes: [],
+        regionTypes: [],
     })
 }, {
     serializers: _.extend({
-        points: { deserialize: widgets.unpack_models },
+        vertices: { deserialize: widgets.unpack_models },
+        vertexFlags: { deserialize: widgets.unpack_models },
+        segments: { deserialize: widgets.unpack_models },
+        segmentFlags: { deserialize: widgets.unpack_models },
+        regions: { deserialize: widgets.unpack_models },
+        regionFlags: { deserialize: widgets.unpack_models },
+        holes: { deserialize: widgets.unpack_models },
+        boundaryTypes: { deserialize: widgets.unpack_models },
+        regionTypes: { deserialize: widgets.unpack_models },
     }, widgets.DOMWidgetModel.serializers)
 });
 
@@ -58,45 +74,50 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
             .attr("height", height)
             .attr("fill", "none");
         
-        svg.append("path")
+        svg.append("path");
         
         this.el.appendChild(document.createElement('form'));
-        this.el.children[1].innerHTML= '\
-<label for="interpolate">Interpolate:</label>\
-<select id="interpolate"></select><br>';
-	console.log(this.el);
-	console.log(this.el.children[1]);
-	console.log(this.el.children[1].children[1]);
+        this.el.children[1].innerHTML= '<label for="regionType">Region:</label> \
+  <select id="regionType"></select><br>';
+        this.el.appendChild(document.createElement('form'));
+        this.el.children[2].innerHTML= '<label for="boundaryType">Boundary:</label> \
+  <select id="boundaryType"></select><br>';
+/*	this.el.appendChild(document.createElement('div'));
+        this.el.children[3].innerHTML= '<p> \
+    Click to add new vertex. Hold 'r' and click to add new \
+    region. Hold 'h' and click to add new hole.  Click and drag \
+    between two vertices to create a segment. Select an entity and \
+    type backspace or delete to remove. Use the pull down menus to \
+    set the boundary type for new vertices and segments and region type \
+    for new regions. \
+  </p>';*/
+
         d3.select(this.el.children[1].children[1])
             .selectAll("option")
-            .data([
-                "linear",
-                "step-before",
-                "step-after",
-                "basis",
-                "basis-open",
-                "basis-closed",
-                "cardinal",
-                "cardinal-open",
-                "cardinal-closed",
-                "monotone"
-            ])
+            .data([1,2,3,0])
+            .enter().append("option")
+            .attr("value", function(d) { return d; })
+            .text(function(d) { return d; });
+        d3.select(this.el.children[2].children[1])
+            .selectAll("option")
+            .data([1,2,3,0])
             .enter().append("option")
             .attr("value", function(d) { return d; })
             .text(function(d) { return d; });
         
-        this.points_changed();
-        this.model.on('change:points', this.points_changed, this);
+        this.vertices_changed();
+        this.model.on('change:vertices', this.vertices_changed, this);
     },
     
-    points_changed: function() {
+    vertices_changed: function() {
         var that=this;
-	console.log("points_changed");
+	console.log("vertices_changed");
 	console.log(this);
 	console.log(this.el);
-	console.log(this.el.children[1]);
-	console.log(this.el.children[1].children[1]);
+	//console.log(this.el.children[1]);
+	//console.log(this.el.children[1].children[1]);
         d3.select(this.el.children[1].children[1]).on("change",change);
+        d3.select(this.el.children[2].children[1]).on("change",change);
         var width = this.model.get('width');
         var height = this.model.get('height');
         var Lx = this.model.get('Lx');
@@ -110,15 +131,15 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
             .domain([y0,Ly])
             .range([height,0]);
 
-        var pointsList = this.model.get('points')
-        var points=[];
-        if (pointsList) {
-            points = d3.range(0,pointsList.length).map(function(i){
-                return ([pxOfx(pointsList[i][0]), 
-                         pyOfy(pointsList[i][1])])
+        var verticesList = this.model.get('vertices')
+        var vertices=[];
+        if (verticesList) {
+            vertices = d3.range(0,verticesList.length).map(function(i){
+                return ([pxOfx(verticesList[i][0]), 
+                         pyOfy(verticesList[i][1])])
             });
         }
-        var dragged = null, selected = points[points.length-1], outsideBox=true;
+        var dragged = null, selected = vertices[vertices.length-1], outsideBox=true;
         var line = d3.svg.line();
 	console.log("svg");
 	console.log(this.el);
@@ -127,7 +148,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
             .attr("pointer-events", "all")
             .on("mousedown", mousedown);
         svg.select("path")
-            .datum(points)
+            .datum(vertices)
             .attr("class", "line")
             .attr("fill", "none")
             .attr("stroke", "steelblue")
@@ -144,7 +165,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
             svg.select("path").attr("d", line);
 
             var circle = svg.selectAll("circle")
-                .data(points, function(d) { return d; });
+                .data(vertices, function(d) { return d; });
 
             circle.attr("fill","none")
                 .attr("stroke", "steelblue")
@@ -178,8 +199,8 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
         
         function mousedown() {
             var mousePoint = selected = dragged = d3.mouse(svg.node());
-            points.push(mousePoint);
-            that.model.set("points",points.map(
+            vertices.push(mousePoint);
+            that.model.set("vertices",vertices.map(
                 function(d){return [pxOfx.invert(d[0]),pyOfy.invert(d[1])]}));
             that.touch();
             redraw();
@@ -204,10 +225,10 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
             switch (d3.event.keyCode) {
             case 8: // backspace
             case 46: { // delete
-                var i = points.indexOf(selected);
-                points.splice(i, 1);
-                selected = points.length ? points[i > 0 ? i - 1 : 0] : null;
-                that.model.set("points", points.map(
+                var i = vertices.indexOf(selected);
+                vertices.splice(i, 1);
+                selected = vertices.length ? vertices[i > 0 ? i - 1 : 0] : null;
+                that.model.set("vertices", vertices.map(
                     function(d){return [pxOfx.invert(d[0]),pyOfy.invert(d[1])]}));
                 that.touch();
                 redraw();
