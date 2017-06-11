@@ -67,8 +67,14 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
         var svg = d3.select(this.el).append("svg")
             .attr("width", width )
             .attr("height", height)
-            .attr("tabindex", 1);
-	
+            .attr("tabindex", 1)
+	    .style("background-color", "#FFF")
+	    .style("cursor", 'crosshair')
+	    .style("-webkit-user-select", "none")
+	    .style("-moz-user-select", "none")
+	    .style("-ms-user-select", "none")
+	    .style("-o-user-select", "none")
+	    .style("user-select", "none");
         this.svg = svg;
 	
         svg.append("rect")
@@ -94,20 +100,30 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
     for new regions. \
   </p>';
 
+	this.regionTypes=this.model.get('regionTypes');
+	this.boundaryTypes=this.model.get('boundaryTypes');
         d3.select(this.el.children[1].children[1])
 	    .selectAll("option")
-            .data(this.model.get('regionTypes'))
+            .data(this.regionTypes)
             .enter().append("option")
-            .attr("value", function(d) { return d; })
-            .text(function(d) { return d; });
+	    .attr("type", "number")
+	    .style("font","12px sans-serif")
+	    .style("pointer-events","none")
+            .text(function(d) { return d; })
+	    .attr("value", function(d) { return d; });
 	
 	d3.select(this.el.children[2].children[1])
             .selectAll("option")
-            .data(this.model.get('boundaryTypes'))
+            .data(this.boundaryTypes)
             .enter().append("option")
-            .attr("value", function(d) { return d; })
-            .text(function(d) { return d; });
-        
+	    .attr("type", "number")
+	    .style("font","12px sans-serif")
+	    .style("pointer-events","none")
+            .text(function(d) { return d; })
+	    .attr("value", function(d) { return d; });
+
+	this.regionType=this.regionTypes[0];
+	this.boundaryType=this.boundaryTypes[0];
         this.graph_changed();
         this.model.on('change:vertices', this.graph_changed, this);
         this.model.on('change:vertexFlags', this.graph_changed, this);
@@ -138,7 +154,6 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
         var vertexFlagsList = this.model.get('vertexFlags');
         var vertices=[];
         if (verticesList) {
-	    console.log("vertices list");
             vertices = d3.range(0,verticesList.length).map(function(i){
                 return {id: i,
 			x : pxOfx(verticesList[i][0]), 
@@ -159,14 +174,12 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 			type : segmentFlagsList[i]
 		       };
 	    });
-	    console.log("segments list", segments);
         }
 	
         var regionsList = this.model.get('regions');
         var regionFlagsList = this.model.get('regionFlags');
         var regions=[];
         if (regionsList) {
-	    console.log("regions list",regionsList,regionFlagsList);
             regions = d3.range(0,regionsList.length).map(function(i){
                 return {id  : i,
 			x   : pxOfx(regionsList[i][0]),
@@ -175,13 +188,11 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		       };
 	    });
         }
-	console.log("js regions ",regions);
 	var lastRegionId=regionsList.length;
 	
         var holesList = this.model.get('holes')
         var holes=[];
         if (holesList) {
-	    console.log("holes list");
             holes = d3.range(0,holesList.length).map(function(i){
                 return {id  : i,
 			x   : pxOfx(holesList[i][0]),
@@ -190,13 +201,13 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    });
         }
 	var lastHoleId = holesList.length;
-	var boundaryType = -1;
-	var regionType = -1;
 
 	// line displayed when dragging new vertices
 	var drag_line = svg.append('svg:path')
-	    .style('stroke', function(d) {return colors(boundaryType);})
+	    .style('stroke', function(d) {return colors(that.boundaryType);})
 	    .attr('class', 'segment dragline hidden')
+	    .style('stroke-dasharray', '10,2')
+	    .style('stroke-width', '4px')
 	    .attr('d', 'M0,0L0,0');
 
 	// handles to segment and vertex element groups
@@ -204,7 +215,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    vertex = svg.append('svg:g').selectAll('.vertex'),
 	    region = svg.append('svg:g').selectAll('.region'),
 	    hole = svg.append('svg:g').selectAll('.hole');
-
+	
 	// mouse event vars
 	var selected_vertex = null,
 	    selected_region = null,
@@ -218,6 +229,32 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    mousedown_hole = null,
 	    mouseup_hole = null;
 
+	function updateBackend() {
+	    //sync with backend
+            that.model.set("vertices", vertices.map(function(d) {
+		return [pxOfx.invert(d.x),pyOfy.invert(d.y)];
+	    }));
+            that.model.set("vertexFlags", vertices.map(function(d) {
+		return d.type;
+	    }));
+	    that.model.set("segments", segments.map(function(d) {
+		return [vertices.indexOf(d.source),vertices.indexOf(d.target)];
+	    }));
+	    that.model.set("segmentFlags", segments.map(function(d) {
+		return d.type
+	    }));
+	    that.model.set("holes", holes.map(function(d) {
+		return [pxOfx.invert(d.x),pyOfy.invert(d.y)];
+	    }));
+	    that.model.set("regions", regions.map(function(d) {
+		return [pxOfx.invert(d.x),pyOfy.invert(d.y)];
+	    }));
+	    that.model.set("regionFlags", regions.map(function(d) {
+		return d.type;
+	    }));
+            that.touch();
+	}
+	
 	function resetMouseVars() {
 	    mousedown_vertex = null;
 	    mouseup_vertex = null;
@@ -229,7 +266,10 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	}
 
 	function redraw() {
-	    segment.attr('d', function(d) {
+	    segment.style("fill","none")
+		.style("stroke-width","4px")		
+		.style("cursor","pointer")
+		.attr('d', function(d) {
 		var deltaX = d.target.x - d.source.x,
 		    deltaY = d.target.y - d.source.y,
 		    dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
@@ -244,13 +284,19 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
 	    });
 
-	    vertex.attr('transform', function(d) {
+	    vertex.style("stroke-width","1.5px")
+		.style("cursor","pointer")
+		.attr('transform', function(d) {
 		return 'translate(' + d.x + ',' + d.y + ')';
 	    });
-	    region.attr('transform', function(d) {
+	    region.style("stroke-width","1.5px")
+		.style("cursor","pointer")
+		.attr('transform', function(d) {
 		return 'translate(' + (d.x-12) + ',' + (d.y-12) + ')';
 	    });
-	    hole.attr('transform', function(d) {
+	    hole.style("stroke-width","1.5px")
+		.style("cursor","pointer")
+		.attr('transform', function(d) {
 		return 'translate(' + (d.x-12) + ',' + (d.y-12) + ')';
 	    });
 	}
@@ -261,13 +307,14 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    segment = segment.data(segments);
 	    
 	    // update existing segments
-	    segment.classed('selected', function(d) { return d === selected_segment; });
-	    
+	    segment.classed('selected', function(d) { return d === selected_segment; })
+	    	.style('stroke-dasharray', function (d) { return d === selected_segment ? "10,2" : null;});
 	    // add new segments
 	    segment.enter().append('svg:path')
 		.attr('class', 'segment')
 		.classed('selected', function(d) { return d === selected_segment; })
 		.style('stroke', function(d) {return colors(d.type);})
+		.style('stroke-dasharray', function (d) { return d === selected_segment ? "10,2" : null;})
 		.on('mousedown', function(d) {
 		    if(d3.event.ctrlKey) return;	    
 		    // select segment
@@ -318,7 +365,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		    // reposition drag line
 		    drag_line
 			.classed('hidden', false)
-			.style('stroke', function(d) {return colors(boundaryType);})
+			.style('stroke', function(d) {return colors(that.boundaryType);})
 			.attr('d', 'M' + mousedown_vertex.x + ',' + mousedown_vertex.y + 'L' + mousedown_vertex.x + ',' + mousedown_vertex.y);
 		    restart();
 		})
@@ -353,10 +400,10 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		    })[0];
 		    
 		    if(!segment) {
-			segment = {source: source, target: target, left: false, right: false, type: boundaryType};
+			segment = {source: source, target: target, left: false, right: false, type: that.boundaryType};
 			segments.push(segment);
 		    }
-		    
+		    updateBackend();
 		    // select new segment
 		    selected_segment = segment;
 		    selected_vertex = null;
@@ -370,6 +417,10 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		.attr('x', 0)
 		.attr('y', 4)
 		.attr('class', 'id')
+		.style("font","12px sans-serif")
+		.style("pointer-events","none")
+		.style("text-anchor","middle")
+		.style("font-weight","bold")
 		.text(function(d) { return d.type; });
 	    
 	    // remove old vertices
@@ -431,6 +482,10 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		.attr('x', 12)
 		.attr('y', 16)
 		.attr('class', 'id')
+		.style("font","12px sans-serif")
+		.style("pointer-events","none")
+		.style("text-anchor","middle")
+		.style("font-weight","bold")
 		.text(function(d) { return d.type; });
 
 	    // remove old regions
@@ -494,6 +549,9 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 
 	    // redraw graph
 	    redraw();
+	    //debugging
+	    //dump .poly to console
+	    /*
 	    console.log(vertices.length,2,0,1);
 	    console.log("#vertices");
 	    for (var i=0; i<vertices.length;i++) {
@@ -514,7 +572,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    console.log("#regions");
 	    for (var i=0;i<regions.length;i++) {
 		console.log(i,regions[i].x,regions[i].y,regions[i].type);
-	    }
+	    }*/
 	}
 
 	function mousedown() {
@@ -529,17 +587,17 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    // insert new vertex, region, or hole at point
 	    var point = d3.mouse(this);
 	    if (lastKeyDown == 82) {
-		var new_region = {id: ++lastRegionId, x:point[0], y:point[1], type:regionType};
+		var new_region = {id: ++lastRegionId, x:point[0], y:point[1], type:that.regionType};
 		regions.push(new_region);
 	    }
 	    else if (lastKeyDown == 72) {
 		var new_hole = {id: ++lastHoleId, x:point[0], y:point[1]};
 		holes.push(new_hole);
 	    } else {
-		var new_vertex = {id: ++lastVertexId, x:point[0], y:point[1], type:boundaryType};
+		var new_vertex = {id: ++lastVertexId, x:point[0], y:point[1], type:that.boundaryType};
 		vertices.push(new_vertex);
 	    }
-
+	    updateBackend();
 	    restart();
 	}
 
@@ -547,7 +605,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    if(!mousedown_vertex) return;
 
 	    // update drag line
-	    drag_line.style('stroke', function(d) {return colors(boundaryType);})
+	    drag_line.style('stroke', function(d) {return colors(that.boundaryType);})
 		.attr('d', 'M' + mousedown_vertex.x + ',' + mousedown_vertex.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
 
 	    restart();
@@ -604,6 +662,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		} else if(selected_segment) {
 		    segments.splice(segments.indexOf(selected_segment), 1);
 		}
+		updateBackend();
 		selected_segment = null;
 		selected_vertex = null;
 		selected_region = null;
@@ -625,15 +684,14 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	}
 
 	function region_changed() {
-	    regionType=Number(this.value);
+	    that.regionType=Number(this.value);
 	    restart();
 	}
 	function boundary_changed() {
-	    boundaryType=Number(this.value);
+	    that.boundaryType=Number(this.value);
 	    restart();
 	}
-	boundary_changed();
-	region_changed();
+
         d3.select(this.el.children[1].children[1]).on("change",region_changed);
         d3.select(this.el.children[2].children[1]).on("change",boundary_changed);
 	
@@ -644,11 +702,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    .on('keydown', keydown)
 	    .on('keyup', keyup);
 	restart();
-        //that.model.set("vertices", vertices.map(
-        //            function(d){return [pxOfx.invert(d[0]),pyOfy.invert(d[1])]}));
-        //        that.touch();
     },
-
 });
 
 module.exports = {
