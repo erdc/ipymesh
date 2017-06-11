@@ -24,7 +24,7 @@ class PSLGEditor(widgets.DOMWidget):
     segments = List().tag(sync=True)
     segmentFlags = List().tag(sync=True)
     regions = List().tag(sync=True)
-    regionsFlags = List().tag(sync=True)
+    regionFlags = List().tag(sync=True)
     holes = List().tag(sync=True)
     boundaryTypes = List().tag(sync=True)
     regionTypes = List().tag(sync=True)
@@ -36,7 +36,7 @@ class PSLGEditor(widgets.DOMWidget):
         self.segments=segments
         self.segmentFlags=segmentFlags
         self.regions=regions
-        self.regionsFlags=regionFlags
+        self.regionFlags=regionFlags
         self.holes=holes
         self.width=width
         self.height=height
