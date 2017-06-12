@@ -83,7 +83,9 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
             .attr("fill", "none");
         
         svg.append("path");
-        
+	//color scale for region and boundary types
+        this.colors = d3.scale.category10();
+	
         this.el.appendChild(document.createElement('form'));
         this.el.children[1].innerHTML= '<label for="regionType">Region:</label> \
   <select id="regionType"></select><br>';
@@ -124,13 +126,27 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 
 	this.regionType=this.regionTypes[0];
 	this.boundaryType=this.boundaryTypes[0];
+
         this.graph_changed();
-        this.model.on('change:vertices', this.graph_changed, this);
-        this.model.on('change:vertexFlags', this.graph_changed, this);
-        this.model.on('change:segments', this.graph_changed, this);
-        this.model.on('change:segmentFlags', this.graph_changed, this);
-        this.model.on('change:regions', this.graph_changed, this);
-        this.model.on('change:regionFlags', this.graph_changed, this);
+	/*
+        this.model.on('change:vertices', this.python_changed, this);
+        this.model.on('change:vertexFlags', this.python_changed, this);
+        this.model.on('change:segments', this.python_changed, this);
+        this.model.on('change:segmentFlags', this.python_changed, this);
+        this.model.on('change:regions', this.python_changed, this);
+        this.model.on('change:regionFlags', this.python_changed, this);
+        this.model.on('change:holes', this.python_changed, this);
+	*/
+    },
+
+    python_changed: function() {
+	console.log("calling python changed");
+	d3.selectAll(".vertex").remove();
+	d3.selectAll(".segment").remove();
+	d3.selectAll(".region").remove();
+	d3.selectAll(".hole").remove();
+	d3.selectAll(".id").remove();
+	this.graph_changed();
     },
     
     graph_changed: function() {
@@ -148,8 +164,8 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
         var pyOfy = d3.scale.linear()
             .domain([y0,Ly])
             .range([height,0]);
-	var colors = d3.scale.category10();
-	
+	var colors = this.colors;
+	console.log("reading mesh from Python backend");
         var verticesList = this.model.get('vertices');
         var vertexFlagsList = this.model.get('vertexFlags');
         var vertices=[];
@@ -230,6 +246,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    mouseup_hole = null;
 
 	function updateBackend() {
+	    console.log("updating mesh on Python backend");
 	    //sync with backend
             that.model.set("vertices", vertices.map(function(d) {
 		return [pxOfx.invert(d.x),pyOfy.invert(d.y)];
@@ -402,8 +419,8 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		    if(!segment) {
 			segment = {source: source, target: target, left: false, right: false, type: that.boundaryType};
 			segments.push(segment);
+			updateBackend();
 		    }
-		    updateBackend();
 		    // select new segment
 		    selected_segment = segment;
 		    selected_vertex = null;
@@ -655,14 +672,17 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		if(selected_vertex) {
 		    vertices.splice(vertices.indexOf(selected_vertex), 1);
 		    spliceSegmentsForVertex(selected_vertex);
+		    updateBackend();
 		} else if(selected_region) {
 		    regions.splice(regions.indexOf(selected_region), 1);
+		    updateBackend();
 		} else if(selected_hole) {
 		    holes.splice(holes.indexOf(selected_hole), 1);
+		    updateBackend();
 		} else if(selected_segment) {
 		    segments.splice(segments.indexOf(selected_segment), 1);
+		    updateBackend();
 		}
-		updateBackend();
 		selected_segment = null;
 		selected_vertex = null;
 		selected_region = null;
