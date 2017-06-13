@@ -128,7 +128,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	this.boundaryType=this.boundaryTypes[0];
 
         this.graph_changed();
-	/*
+
         this.model.on('change:vertices', this.python_changed, this);
         this.model.on('change:vertexFlags', this.python_changed, this);
         this.model.on('change:segments', this.python_changed, this);
@@ -136,17 +136,18 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
         this.model.on('change:regions', this.python_changed, this);
         this.model.on('change:regionFlags', this.python_changed, this);
         this.model.on('change:holes', this.python_changed, this);
-	*/
     },
 
     python_changed: function() {
 	console.log("calling python changed");
+	/*
 	d3.selectAll(".vertex").remove();
 	d3.selectAll(".segment").remove();
 	d3.selectAll(".region").remove();
 	d3.selectAll(".hole").remove();
 	d3.selectAll(".id").remove();
 	this.graph_changed();
+	*/
     },
     
     graph_changed: function() {
