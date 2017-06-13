@@ -25,6 +25,7 @@ var PSLGEditorModel = widgets.DOMWidgetModel.extend({
         _view_module : 'ipymesh-widgets',
         _model_module_version : '0.1.0',
         _view_module_version : '0.1.0',
+	sync_toggle: true,
         width: 600,
         height: 600,
         Lx: 1.0,
@@ -128,26 +129,18 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	this.boundaryType=this.boundaryTypes[0];
 
         this.graph_changed();
-
-        this.model.on('change:vertices', this.python_changed, this);
-        this.model.on('change:vertexFlags', this.python_changed, this);
-        this.model.on('change:segments', this.python_changed, this);
-        this.model.on('change:segmentFlags', this.python_changed, this);
-        this.model.on('change:regions', this.python_changed, this);
-        this.model.on('change:regionFlags', this.python_changed, this);
-        this.model.on('change:holes', this.python_changed, this);
+	
+        this.model.on('change:sync_toggle', this.python_changed, this);
     },
 
     python_changed: function() {
 	console.log("calling python changed");
-	/*
-	d3.selectAll(".vertex").remove();
-	d3.selectAll(".segment").remove();
-	d3.selectAll(".region").remove();
-	d3.selectAll(".hole").remove();
-	d3.selectAll(".id").remove();
+	d3.select(this.el).selectAll(".vertex").remove();
+	d3.select(this.el).selectAll(".segment").remove();
+	d3.select(this.el).selectAll(".region").remove();
+	d3.select(this.el).selectAll(".hole").remove();
+	d3.select(this.el).selectAll(".id").remove();
 	this.graph_changed();
-	*/
     },
     
     graph_changed: function() {

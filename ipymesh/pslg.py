@@ -13,6 +13,7 @@ class PSLGEditor(widgets.DOMWidget):
     _view_module = Unicode('ipymesh-widgets').tag(sync=True)
     _view_module_version = Unicode('^0.1.0').tag(sync=True)
     _model_module_version = Unicode('^0.1.0').tag(sync=True)
+    sync_toggle=Bool().tag(sync=True)
     width = Int().tag(sync=True)
     height = Int().tag(sync=True)
     Lx = Float(1.0).tag(sync=True)
@@ -46,3 +47,9 @@ class PSLGEditor(widgets.DOMWidget):
         self.y0=y0
         self.boundaryTypes = boundaryTypes
         self.regionTypes = regionTypes
+        self.sync_toggle=True
+    def sync(self):
+        if self.sync_toggle:
+            self.sync_toggle=False
+        else:
+            self.sync_toggle=True
