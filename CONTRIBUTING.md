@@ -1,67 +1,31 @@
-# Contributing to Our Projects, Version 1.2 
+# Contributing to this project
 
-Thanks for thinking about using or contributing to this software and its documentation (“ipymesh”)!
+Anybody is welcome to create a branch on this repository and make edits.  If you'd like to have your code merged back into the master branch, please ensure you do the following before opening the pull request:
 
-## 1. Introduction
+### Code Style
 
-The project maintainer for this Project will only accept contributions using the Developer’s Certificate of Origin 1.1 located at https://developercertificate.org (“DCO”). The DCO is a legally binding statement asserting that you are the creator of your contribution, or that you otherwise have the authority to distribute the contribution, and that you are intentionally making the contribution available under the license associated with the Project ("License").
+Our code style conventions are automatically checked on both the Java server side and the Javascript client side.  You can run these checks with: 
 
-## 2. Developer Certificate of Origin Process
+- Java Checkstyle `./gradlew check`
+- JS Lint `cd client; npm run lint` 
 
-You can agree to the DCO in your contribution by using a “Signed-off-by” line at the end of your commit message. You should only submit a contribution if you are willing to agree to the DCO terms. If you are willing, just add a line to the end of every git commit message:
+### Testing
 
-```Signed-off-by: Jane Smith <jane.smith@email.com>```
+Before we merge any code into master we verify that all tests run.  You can run these yourself with: 
 
-You may type this line on your own when writing your commit messages. However, Git makes it easy to add this line to your commit messages. If you set your `user.name` and `user.email` as part of your git configuration, you can sign your commit automatically with `git commit -s`.
+- Backend Unit Tests `export DB_DRIVER='sqlserver'; ./gradlew test`
+- Front-end Integration Tests `cd client; npm run test`
 
-## 3. Important Points
+If you are adding any new features, please write test cases that cover your features. 
 
-Pseudonymous or anonymous contributions are permissible, but you must be reachable at the email provided in the Signed-off-by line.
+### The legal stuff
 
-We encourage contributors to modify `CONTRIBUTORS.md` to add your name and copyright date to the list of people who have contributed to the Project. If your contribution is significant, you are also welcome to add your name and copyright date to the source file header. 
+When you submit a pull request to this repository for the first time, you need to sign a Developer Certificate of Origin ("DCO"). To read and agree to the DCO, you'll add your name and email address to `Contributors.md`. At a high level, it tells us that you have the right to submit the work you're contributing in your pull requests and says that you consent to us treating the contribution in a way consistent with the license associated with this software and its documentation ("Project"). You can read the license associated with this project in `LICENSE.md`. 
 
-U.S. Federal law prevents the government from accepting gratuitous services unless certain conditions are met. By submitting a pull request, you acknowledge that your services are offered without expectation of payment and that you expressly waive any future pay claims against the U.S. Federal government related to your contribution.
+You can submit contributions anonymously or under a pseudonym if you'd like, but we need to be able to reach you at the email address you list when you agree to the DCO. 
 
-If you are a U.S. Federal government employee and use a *.mil or *.gov email address, we interpret your Signed-off-by to mean that the contribution was created in whole or in part by you and that your contribution is not subject to copyright protections.
+It probably goes without saying, but contributions you make to this public Department of Defense repository are completely voluntary. When you submit a pull request, you're offering your contribution without expectation of payment and you expressly waive any future pay claims against the U.S. Federal government related to your contribution. 
 
-## 4. DCO Text
+### Open a Pull Request
 
-The text of the DCO is (from https://developercertificate.org):
-```
-Developer Certificate of Origin
-Version 1.1
-
-Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
-1 Letterman Drive
-Suite D4700
-San Francisco, CA, 94129
-
-Everyone is permitted to copy and distribute verbatim copies of this
-license document, but changing it is not allowed.
-
-Developer's Certificate of Origin 1.1
-
-By making a contribution to this project, I certify that:
-
-(a) The contribution was created in whole or in part by me and I
-    have the right to submit it under the open source license
-    indicated in the file; or
-
-(b) The contribution is based upon previous work that, to the best
-    of my knowledge, is covered under an appropriate open source
-    license and I have the right under that license to submit that
-    work with modifications, whether created in whole or in part
-    by me, under the same open source license (unless I am
-    permitted to submit under a different license), as indicated
-    in the file; or
-
-(c) The contribution was provided directly to me by some other
-    person who certified (a), (b) or (c) and I have not modified
-    it.
-
-(d) I understand and agree that this project and the contribution
-    are public and that a record of the contribution (including all
-    personal information I submit with it, including my sign-off) is
-    maintained indefinitely and may be redistributed consistent with
-    this project or the open source license(s) involved.
-```
+Once your branch is ready to be merged please open a pull request and assign it to one of the repository admins.  (Currently @hunterp and @nickjs).  

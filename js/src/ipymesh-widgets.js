@@ -93,14 +93,18 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
         this.el.appendChild(document.createElement('form'));
         this.el.children[2].innerHTML= '<label for="boundaryType">Boundary:</label> \
   <select id="boundaryType"></select><br>';
+        this.el.appendChild(document.createElement('form'));
+        this.el.children[3].innerHTML= 'x: <input type="number" id="x">';
+        this.el.appendChild(document.createElement('form'));
+        this.el.children[4].innerHTML= 'y: <input type="number" id="y">';
 	this.el.appendChild(document.createElement('div'));
-        this.el.children[3].innerHTML= '<p> \
+        this.el.children[5].innerHTML= '<p> \
     Click to add new vertex. Hold the r key and click to add new \
     region. Hold the h key and click to add new hole.  Click and drag \
     between two vertices to create a segment. Select an entity and \
-    type backspace or delete to remove. Use the pull down menus to \
+    type delete to remove. Use the pull down menus to \
     set the boundary type for new vertices and segments and region type \
-    for new regions. \
+    for new regions. To move a vertex, region, or hole select it, type coordinates, and return. \
   </p>';
 
 	this.regionTypes=this.model.get('regionTypes');
@@ -125,6 +129,8 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
             .text(function(d) { return d; })
 	    .attr("value", function(d) { return d; });
 
+	
+
 	this.regionType=this.regionTypes[0];
 	this.boundaryType=this.boundaryTypes[0];
 
@@ -134,7 +140,6 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
     },
 
     python_changed: function() {
-	console.log("calling python changed");
 	d3.select(this.el).selectAll(".vertex").remove();
 	d3.select(this.el).selectAll(".segment").remove();
 	d3.select(this.el).selectAll(".region").remove();
@@ -159,7 +164,6 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
             .domain([y0,Ly])
             .range([height,0]);
 	var colors = this.colors;
-	console.log("reading mesh from Python backend");
         var verticesList = this.model.get('vertices');
         var vertexFlagsList = this.model.get('vertexFlags');
         var vertices=[];
@@ -240,7 +244,6 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    mouseup_hole = null;
 
 	function updateBackend() {
-	    console.log("updating mesh on Python backend");
 	    //sync with backend
             that.model.set("vertices", vertices.map(function(d) {
 		return [pxOfx.invert(d.x),pyOfy.invert(d.y)];
@@ -369,7 +372,11 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		    // select vertex
 		    mousedown_vertex = d;
 		    if(mousedown_vertex === selected_vertex) selected_vertex = null;
-		    else selected_vertex = mousedown_vertex;
+		    else {
+			selected_vertex = mousedown_vertex;
+			d3.select("#x")[0][0].value = pxOfx.invert(selected_vertex.x);
+			d3.select("#y")[0][0].value = pyOfy.invert(selected_vertex.y);
+		    }
 		    selected_segment = null;
 		    selected_region = null;
 		    selected_hole = null;
@@ -465,7 +472,11 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		    // select region
 		    mousedown_region = d;
 		    if(mousedown_region === selected_region) selected_region = null;
-		    else selected_region = mousedown_region;
+		    else {
+			selected_region = mousedown_region;
+			d3.select("#x")[0][0].value = pxOfx.invert(selected_region.x);
+			d3.select("#y")[0][0].value = pyOfy.invert(selected_region.y);
+		    }
 		    selected_segment = null;
 		    selected_vertex = null;
 		    selected_hole = null;
@@ -531,7 +542,11 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		    // select hole
 		    mousedown_hole = d;
 		    if(mousedown_hole === selected_hole) selected_hole = null;
-		    else selected_hole = mousedown_hole;
+		    else {
+			selected_hole = mousedown_hole;
+			d3.select("#x")[0][0].value = pxOfx.invert(selected_hole.x);
+			d3.select("#y")[0][0].value = pyOfy.invert(selected_hole.y);
+		    }
 		    selected_segment = null;
 		    selected_vertex = null;
 		    selected_region = null;
@@ -649,8 +664,23 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	var lastKeyDown = -1;
 
 	function keydown() {
+	    var is_digit = d3.event.keyCode <= 57 && d3.event.keyCode >= 48;
+	    if ( is_digit ) {
+		return;//for typing in numbers into x and y input areas:0-9 + ',' + backspace
+	    }
+	    else if (d3.event.keyCode == 190) {//decimal
+		return;
+	    }
+	    else if (d3.event.keyCode == 8){//backspace
+		return
+	    }
+	    else if (d3.event.keyCode == 13) {//enter
+		//trigger point move on enter/return
+		x_changed();
+		y_changed();
+	    }
 	    d3.event.preventDefault();
-
+	    
 	    if(lastKeyDown !== -1) return;
 	    lastKeyDown = d3.event.keyCode;
 
@@ -661,7 +691,6 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 
 	    if(!selected_vertex && !selected_segment && !selected_region && !selected_hole) return;
 	    switch(d3.event.keyCode) {
-	    case 8: // backspace
 	    case 46: // delete
 		if(selected_vertex) {
 		    vertices.splice(vertices.indexOf(selected_vertex), 1);
@@ -705,10 +734,45 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    that.boundaryType=Number(this.value);
 	    restart();
 	}
-
+	function x_changed() {
+	    if(selected_vertex) {
+		selected_vertex.x=pxOfx(d3.select("#x")[0][0].value);
+		updateBackend();
+		restart();
+	    }
+	    else if(selected_region) {
+		selected_region.x=pxOfx(d3.select("#x")[0][0].value);
+		updateBackend();
+		restart();
+	    }
+	    else if(selected_hole) {
+		selected_hole.x=pxOfx(d3.select("#x")[0][0].value);
+		updateBackend();
+		restart();
+	    }
+	}
+	function y_changed() {
+	    if(selected_vertex) {
+		selected_vertex.y=pyOfy(d3.select("#y")[0][0].value);
+		updateBackend();
+		restart();
+	    }
+	    else if(selected_region) {
+		selected_region.y=pyOfy(d3.select("#y")[0][0].value);
+		updateBackend();
+		restart();
+	    }
+	    else if(selected_hole) {
+		selected_hole.y=pyOfy(d3.select("#y")[0][0].value);
+		updateBackend();
+		restart();
+	    }
+	}
+	
         d3.select(this.el.children[1].children[1]).on("change",region_changed);
         d3.select(this.el.children[2].children[1]).on("change",boundary_changed);
-	
+	d3.select(this.el.children[3]).on("change",x_changed);
+	d3.select(this.el.children[4]).on("change",y_changed);
 	svg.on('mousedown', mousedown)
 	    .on('mousemove', mousemove)
 	    .on('mouseup', mouseup);
