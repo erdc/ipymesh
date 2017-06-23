@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A Custom Mesh Widget Library",
   "author": "Chris Kees",
+  "license": "MIT",
   "main": "src/index.js",
   "repository": {
     "type": "git",
