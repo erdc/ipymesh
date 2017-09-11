@@ -18,6 +18,7 @@ class PSLGEditor(widgets.DOMWidget):
     height = Int().tag(sync=True)
     Lx = Float(1.0).tag(sync=True)
     Ly = Float(1.0).tag(sync=True)
+    image = Unicode('').tag(sync=True)
     x0 = Float(0.0).tag(sync=True)
     y0 = Float(0.0).tag(sync=True)
     vertices = List().tag(sync=True)
@@ -30,7 +31,7 @@ class PSLGEditor(widgets.DOMWidget):
     boundaryTypes = List().tag(sync=True)
     regionTypes = List().tag(sync=True)
 
-    def __init__(self, vertices=[[300,300]], vertexFlags=[1],segments=[],segmentFlags=[],regions=[],regionFlags=[],holes=[],boundaryTypes=[1,0],regionTypes=[1,0],width=600, height=600, Lx=1.0, Ly=1.0, x0=0.0, y0=0.0, *args, **kwargs):
+    def __init__(self, vertices=[[300,300]], vertexFlags=[1],segments=[],segmentFlags=[],regions=[],regionFlags=[],holes=[],boundaryTypes=[1,0],regionTypes=[1,0],width=600, height=600, Lx=1.0, Ly=1.0, image='', x0=0.0, y0=0.0, *args, **kwargs):
         super(PSLGEditor, self).__init__(*args, **kwargs)
         self.vertices=vertices
         self.vertexFlags=vertexFlags
@@ -43,6 +44,7 @@ class PSLGEditor(widgets.DOMWidget):
         self.height=height
         self.Lx=Lx
         self.Ly=Ly
+        self.image=image
         self.x0=x0
         self.y0=y0
         self.boundaryTypes = boundaryTypes

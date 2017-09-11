@@ -30,6 +30,7 @@ var PSLGEditorModel = widgets.DOMWidgetModel.extend({
         height: 600,
         Lx: 1.0,
         Ly: 1.0,
+	image: '',
         x0: 0.0,
         y0: 0.0,
         vertices: [],
@@ -64,7 +65,8 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
         this.el.innerHTML = '';
         var width = this.model.get('width');
         var height = this.model.get('height');
-
+	var image= this.model.get('image');
+	
         var svg = d3.select(this.el).append("svg")
             .attr("width", width )
             .attr("height", height)
@@ -77,12 +79,32 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    .style("-o-user-select", "none")
 	    .style("user-select", "none");
         this.svg = svg;
+	if (image.length > 0)
+	{	
+	    svg.append("defs")
+		.append("pattern")
+		.attr('id', 'locked2')
+		.attr('patternUnits', 'userSpaceOnUse')
+		.attr('width', width)
+		.attr('height', height)
+		.attr("id", "bg")
+		.append("image")
+		.attr("xlink:href", image)
+		.attr('width', width)
+		.attr('height', height);
+            svg.append("rect")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("fill", "url(#bg)");
+	}
+	else
+	{
+            svg.append("rect")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("fill", "none");
+	}
 	
-        svg.append("rect")
-            .attr("width", width)
-            .attr("height", height)
-            .attr("fill", "none");
-        
         svg.append("path");
 	//color scale for region and boundary types
         this.colors = d3.scale.category10();
@@ -628,6 +650,7 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	}
 
 	function mousemove() {
+	    // console.log(d3.mouse(this));
 	    if(!mousedown_vertex) return;
 
 	    // update drag line
