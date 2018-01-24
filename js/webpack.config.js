@@ -39,7 +39,7 @@ module.exports = [
         module: {
             loaders: loaders
         },
-        externals: ['jupyter-js-widgets']
+        externals: ['@jupyter-widgets/base']
     },
     {// Embeddable ipymesh-widgets bundle
      //
@@ -60,12 +60,11 @@ module.exports = [
             filename: 'index.js',
             path: './dist/',
             libraryTarget: 'amd',
-            publicPath: 'https://unpkg.com/ipymesh-widgets@' + version + '/dist/'
         },
         devtool: 'source-map',
         module: {
             loaders: loaders
         },
-        externals: ['jupyter-js-widgets']
+        externals: ['@jupyter-widgets/base']
     }
 ];
