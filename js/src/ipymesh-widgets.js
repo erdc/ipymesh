@@ -30,7 +30,7 @@ var PSLGEditorModel = widgets.DOMWidgetModel.extend({
         height: 600,
         Lx: 1.0,
         Ly: 1.0,
-	image: '',
+	image: new Uint8Array(0),
         x0: 0.0,
         y0: 0.0,
         vertices: [],
@@ -79,8 +79,16 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 	    .style("-o-user-select", "none")
 	    .style("user-select", "none");
         this.svg = svg;
-	if (image.length > 0)
-	{	
+	console.log("image");
+	console.log(image);
+	//console.log("image.length");
+	//console.log(image.length);
+	if (image.byteLength > 0)
+	{	    
+	    //            var blob = new Blob([this.model.get('value')], {type: `image/${this.model.get('format')}`});
+	    var blob = new Blob([image], {type: "image/png"});
+            var url = URL.createObjectURL(blob);
+	    console.log(url);
 	    svg.append("defs")
 		.append("pattern")
 		.attr('id', 'locked2')
@@ -89,7 +97,8 @@ var PSLGEditorView = widgets.DOMWidgetView.extend({
 		.attr('height', height)
 		.attr("id", "bg")
 		.append("image")
-		.attr("xlink:href", image)
+		.attr("href", url)
+//		.attr("xlink:href", image)
 		.attr('width', width)
 		.attr('height', height);
             svg.append("rect")

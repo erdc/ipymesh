@@ -10,7 +10,7 @@ module.exports = {
   requires: [base.IJupyterWidgetRegistry],
   activate: function(app, widgets) {
       widgets.registerWidget({
-          name: 'ipymesh',
+          name: 'ipymesh-widgets',
           version: ipymesh.version,
           exports: ipymesh
       });
