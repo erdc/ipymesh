@@ -1,0 +1,8 @@
+examples/.ipynb_checkpoints/*
+
+ipymesh.egg-info/*
+ipymesh/__pycache__/*
+ipymesh/static/*
+js/dist/*
+
+js/node_modules/*
