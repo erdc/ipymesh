@@ -16,19 +16,19 @@
     "ipywidgets"
   ],
   "scripts": {
-    "prepublish": "webpack",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack",
+    "watch": "webpack --watch"
   },
   "devDependencies": {
-    "json-loader": "^0.5.4",
-    "webpack": "^1.12.14"
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.9"
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^1.0.0",
+    "@jupyter-widgets/base": "^2.0",
     "underscore": "^1.8.3",
     "d3": "^3.5.17"
   },
   "jupyterlab": {
-      "extension" : "src/jupyterlab-plugin"
+    "extension": "src/jupyterlab-plugin"
   }
 }
