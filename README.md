@@ -1,20 +1,36 @@
-ipymesh
-===============================
+
+# ipymesh
+
+[![Build Status](https://travis-ci.org/erdc/ipymesh.svg?branch=master)](https://travis-ci.org/erdc/ipymesh)
+[![codecov](https://codecov.io/gh/erdc/ipymesh/branch/master/graph/badge.svg)](https://codecov.io/gh/erdc/ipymesh)
+
 
 A Custom Mesh Widget Library
 
-Installation
-------------
+## Installation
 
-To install use pip:
+You can install using `pip`:
 
-    $ pip install ipymesh
-    $ jupyter nbextension enable --py --sys-prefix ipymesh
+```bash
+pip install ipymesh
+```
 
+Or if you use jupyterlab:
+
+```bash
+pip install ipymesh
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+```
+
+If you are using Jupyter Notebook 5.2 or earlier, you may also need to enable
+the nbextension:
+```bash
+jupyter nbextension enable --py [--sys-prefix|--user|--system] ipymesh
+```
 
 For a development installation (requires npm),
 
-    $ git clone https://github.com/erdc-cm/ipymesh.git
+    $ git clone https://github.com/erdc/ipymesh.git
     $ cd ipymesh
     $ pip install -e .
     $ jupyter nbextension install --py --symlink --sys-prefix ipymesh
