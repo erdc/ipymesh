@@ -26,8 +26,8 @@ export class PSLGEditorModel extends widgets.DOMWidgetModel {
             _view_name: 'PSLGEditorView',
             _model_module : 'ipymesh-widgets',
             _view_module : 'ipymesh-widgets',
-            _model_module_version : '0.1.0',
-            _view_module_version : '0.1.0',
+            _model_module_version : '0.1.1',
+            _view_module_version : '0.1.1',
             sync_toggle: true,
             width: 600,
             height: 600,
@@ -119,7 +119,7 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
         this.svg.append("path");
 
         // only respond once per keydown
-        this.lastKeyDown = -1;
+        this.currentKeyDown = -1;
 
         //color scale for region and boundary types
         this.colors = d3.scaleOrdinal(d3.schemeCategory10);
@@ -141,7 +141,8 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
     between two vertices to create a segment. Select an entity and \
     type delete to remove. Use the pull down menus to \
     set the boundary type for new vertices and segments and region type \
-    for new regions. To move a vertex, region, or hole select it, type coordinates, and return. \
+    for new regions. To move a vertex, region, or hole select it, type coordinates, and return \
+    (or simply drag it with the mouse while holding the Shift key). \
   </p>';
 
         this.regionTypes = this.model.get('regionTypes');
@@ -290,15 +291,19 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
 
             // insert new vertex, region, or hole at point
             let point = d3.mouse(that.el);
-            if (that.lastKeyDown == 82) {
-                let new_region = {id: ++that.lastRegionId, x:point[0], y:point[1], type:that.regionType};
+            if (that.currentKeyDown == 82) { // r key
+                // new region
+                let new_region = {id: ++that.lastRegionId, x: point[0], y: point[1], type:that.regionType};
                 that.regions.push(new_region);
             }
-            else if (that.lastKeyDown == 72) {
-                let new_hole = {id: ++that.lastHoleId, x:point[0], y:point[1]};
+            else if (that.currentKeyDown == 72) { // h key
+                // new hole
+                let new_hole = {id: ++that.lastHoleId, x: point[0], y: point[1]};
                 that.holes.push(new_hole);
-            } else {
-                let new_vertex = {id: ++that.lastVertexId, x:point[0], y:point[1], type:that.boundaryType};
+            }
+            else {
+                // new vertex
+                let new_vertex = {id: ++that.lastVertexId, x: point[0], y: point[1], type:that.boundaryType};
                 that.vertices.push(new_vertex);
             }
             that.updateBackend();
@@ -320,34 +325,58 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
         }
 
         const mousemove = function () {
-            if (!that.mousedown_vertex) return;
-
-            // update drag line
-            that.drag_line
-                .style('stroke', (d) => { return that.colors(that.boundaryType);} )
-                .attr('d', 'M' + that.mousedown_vertex.x + ',' + that.mousedown_vertex.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
-            that.restart();
+            if (d3GetEvent().shiftKey) {
+                let this_mousedown;
+                if (that.mousedown_vertex) {
+                    this_mousedown = that.mousedown_vertex;
+                }
+                else if (that.mousedown_region) {
+                    this_mousedown = that.mousedown_region;
+                }
+                else if (that.mousedown_hole) {
+                    this_mousedown = that.mousedown_hole;
+                }
+                else {
+                    return;
+                }
+                // shift key is down
+                // drag vertex, region or hole
+                this_mousedown.x = d3.mouse(this)[0];
+                this_mousedown.y = d3.mouse(this)[1];
+                that.restart();
+            }
+            else {
+                if (!that.mousedown_vertex) return;
+                // mouse button is down on a vertex
+                // update drag line
+                that.drag_line
+                    .style('stroke', (d) => { return that.colors(that.boundaryType);} )
+                    .attr('d', 'M' + that.mousedown_vertex.x + ',' + that.mousedown_vertex.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
+                that.restart();
+            }
         }
 
         const keydown = () => {
             let is_digit = d3GetEvent().keyCode <= 57 && d3GetEvent().keyCode >= 48;
+
             if (is_digit) {
-                return;//for typing in numbers into x and y input areas:0-9 + ',' + backspace
+                return; //for typing in numbers into x and y input areas:0-9 + ',' + backspace
             }
-            else if (d3GetEvent().keyCode == 190) {//decimal
+            else if (d3GetEvent().keyCode == 190) { //decimal
                 return;
             }
-            else if (d3GetEvent().keyCode == 8){//backspace
+            else if (d3GetEvent().keyCode == 8){ //backspace
                 return;
             }
-            else if (d3GetEvent().keyCode == 13) {//enter
-                //trigger point move on enter/return
+            else if (d3GetEvent().keyCode == 13) { //enter
+                // trigger point move on enter/return
                 x_changed();
                 y_changed();
             }
+
             d3GetEvent().preventDefault();
-            if (that.lastKeyDown !== -1) return;
-            that.lastKeyDown = d3GetEvent().keyCode;
+            if (that.currentKeyDown !== -1) return;
+            that.currentKeyDown = d3GetEvent().keyCode;
 
             // ctrl
             if(d3GetEvent().keyCode === 17) {
@@ -381,10 +410,10 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
         }
 
         const keyup = () => {
-            that.lastKeyDown = -1;
+            that.currentKeyDown = -1;
 
-            // ctrl
             if (d3GetEvent().keyCode === 17) {
+                // ctrl
                 that.vertex.on('mousedown.drag', null)
                            .on('touchstart.drag', null);
                 that.svg.classed('ctrl', false);
@@ -830,7 +859,7 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
     drag_line: any;
     hole: any;
     holes: any;
-    lastKeyDown: any;
+    currentKeyDown: any;
     lastHoleId: any;
     lastRegionId: any;
     lastVertexId: any;
