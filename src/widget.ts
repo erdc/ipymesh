@@ -26,8 +26,8 @@ export class PSLGEditorModel extends widgets.DOMWidgetModel {
             _view_name: 'PSLGEditorView',
             _model_module : 'ipymesh-widgets',
             _view_module : 'ipymesh-widgets',
-            _model_module_version : '0.1.1',
-            _view_module_version : '0.1.1',
+            _model_module_version : '0.1.2',
+            _view_module_version : '0.1.2',
             sync_toggle: true,
             width: 600,
             height: 600,
@@ -636,18 +636,18 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
                 .on('mousedown', (d) => {
                     if (d3GetEvent().ctrlKey) return;
                     // select region
-                this.mousedown_region = d;
-                if (this.mousedown_region === this.selected_region) this.selected_region = null;
-                else {
-                    this.selected_region = this.mousedown_region;
-                    d3.select("#x").nodes()[0].value = this.pxOfx.invert(this.selected_region.x);
-                    d3.select("#y").nodes()[0].value = this.pyOfy.invert(this.selected_region.y);
-                }
-                this.selected_segment = null;
-                this.selected_vertex = null;
-                this.selected_hole = null;
-                this.restart();
-                })
+                    this.mousedown_region = d;
+                    if (this.mousedown_region === this.selected_region) this.selected_region = null;
+                    else {
+                        this.selected_region = this.mousedown_region;
+                        d3.select("#x").nodes()[0].value = this.pxOfx.invert(this.selected_region.x);
+                        d3.select("#y").nodes()[0].value = this.pyOfy.invert(this.selected_region.y);
+                    }
+                    this.selected_segment = null;
+                    this.selected_vertex = null;
+                    this.selected_hole = null;
+                    this.restart();
+                    })
                 .on('mouseup', (d, i, nodes) => {
                     if (!this.mousedown_region) return;
                     // check for drag-to-self or click-self
