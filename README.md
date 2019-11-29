@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/erdc/ipymesh.svg?branch=master)](https://travis-ci.org/erdc/ipymesh)
 [![codecov](https://codecov.io/gh/erdc/ipymesh/branch/master/graph/badge.svg)](https://codecov.io/gh/erdc/ipymesh)
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/erdc/ipymesh/master?filepath=examples%2FPSLG.ipynb)
 
 A Custom Mesh Widget Library
 

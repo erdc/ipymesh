@@ -1,0 +1,7 @@
+name: ipymesh
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - ipymesh
+  - pandas
