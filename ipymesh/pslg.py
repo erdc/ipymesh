@@ -1,6 +1,6 @@
 import ipywidgets as widgets
 from ipywidgets import FloatText, Dropdown, Label
-from traitlets import Unicode, Float, Int, Tuple, Bool, List, validate, Instance, Bytes, observe
+from traitlets import Unicode, Float, Int, Bool, List, Bytes, observe
 from IPython.display import display
 
 @widgets.register('ipymesh.PSLGEditor')
