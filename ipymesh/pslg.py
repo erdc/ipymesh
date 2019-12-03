@@ -72,7 +72,7 @@ class Graph(widgets.DOMWidget):
         super(Graph, self).__init__(*args, **kwargs)
 
         if self.image_filename:
-            with open(image_filename, 'rb') as f:
+            with open(self.image_filename, 'rb') as f:
                 self.image = f.read()
         self._sync_toggle=True
         self.parent = kwargs['parent']

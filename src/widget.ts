@@ -107,6 +107,7 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
             // Mac Firefox doesn't distinguish between left/right click when CTRL is held
             .filter(() => d3.event.button === 0 || d3.event.button === 2)
             .on('start', (d) => {
+                let holes_or_regions;
                 if (d.is === 'vertex') {
                     this.selectedVertex = d;
                     this.selectedRegion = null;
@@ -118,19 +119,31 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
                     this.selectedRegion = d;
                     this.selectedHole = null;
                     this.selectedSegment = null;
+                    holes_or_regions = this.regions;
                 }
                 else if (d.is === 'hole') {
                     this.selectedVertex = null;
                     this.selectedRegion = null;
                     this.selectedHole = d;
                     this.selectedSegment = null;
+                    holes_or_regions = this.holes;
+                }
+                if (holes_or_regions) {
+                    this.polygon = this.polygon.data(holes_or_regions, (d) => d.id);
+                    this.polygon.selectAll('polygon');
+                    this.polygon.exit().remove();
+                    let p = this.polygon.enter().append('svg:polygon')
+                        .attr('class', 'polygon')
+                        .style('fill', 'lime')
+                        .style('fill-opacity', '0.2');
+                    this.polygon = p.merge(this.polygon);
                 }
                 this.restart();
             })
             .on('drag', (d) => {
                 d.x = d3.event.x;
                 d.y = d3.event.y;
-                if (d.is === 'hole' || d.is === 'region') {
+                if ((d.is === 'hole') || (d.is === 'region')) {
                     this.get_visibility(d.x, d.y);
                 }
                 this.redraw();
@@ -435,15 +448,6 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
             });
 
         this.triangle = h.merge(this.triangle);
-
-        this.polygon = this.polygon.data(this.holes, (d) => d.id);
-        this.polygon.selectAll('polygon');
-        this.polygon.exit().remove();
-        let hh = this.polygon.enter().append('svg:polygon')
-            .attr('class', 'polygon')
-            .style('fill', 'lime')
-            .style('fill-opacity', '0.2');
-        this.polygon = hh.merge(this.polygon);
 
         this.redraw();
     }
