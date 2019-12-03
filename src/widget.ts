@@ -761,6 +761,6 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
     svg: any;
     triangle: any;
     vertices: any;
-    visibilityPolygon;
+    visibilityPolygon: any;
     width: any;
 }
