@@ -1,5 +1,6 @@
 import * as widgets from '@jupyter-widgets/base';
 import * as d3 from 'd3';
+import { VisibilityPolygon } from './visibility';
 
 export class PSLGEditorModel extends widgets.DOMWidgetModel {
     defaults() {
@@ -21,14 +22,15 @@ export class PSLGEditorModel extends widgets.DOMWidgetModel {
 export class PSLGEditorView extends widgets.DOMWidgetView {
     initialize () {
         super.initialize.apply(this, arguments);
+        this.visibilityPolygon = new VisibilityPolygon();
     }
 
     render () {
         super.render.apply(this, arguments);
         this.el.className = "jupyter-widget pslg_widget";
 
-        let width = this.model.get('width');
-        let height = this.model.get('height');
+        this.width = this.model.get('width');
+        this.height = this.model.get('height');
         let image = this.model.get('image');
         let Lx = this.model.get('Lx');
         let Ly = this.model.get('Ly');
@@ -39,18 +41,18 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
         this.add_new = 'vertex';
         this.pxOfx = d3.scaleLinear()
             .domain([x0, Lx])
-            .range([0, width]);
+            .range([0, this.width]);
         this.pyOfy = d3.scaleLinear()
             .domain([y0, Ly])
-            .range([height, 0]);
+            .range([this.height, 0]);
 
         this.colors = d3.scaleOrdinal(d3.schemeCategory10);
 
         this.svg = d3.select(this.el)
             .append('svg')
             .on('contextmenu', () => { d3.event.preventDefault(); })
-            .attr('width', width)
-            .attr('height', height)
+            .attr('width', this.width)
+            .attr('height', this.height)
             .attr("tabindex", 1); // can be focused on
 
         if (image.byteLength > 0) {
@@ -60,22 +62,22 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
             .append("pattern")
             .attr('id', 'locked2')
             .attr('patternUnits', 'userSpaceOnUse')
-            .attr('width', width)
-            .attr('height', height)
+            .attr('width', this.width)
+            .attr('height', this.height)
             .attr("id", "bg")
             .append("image")
             .attr("href", url)
-            .attr('width', width)
-            .attr('height', height);
+            .attr('width', this.width)
+            .attr('height', this.height);
             this.svg.append("rect")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("width", this.width)
+            .attr("height", this.height)
             .attr("fill", "url(#bg)");
         }
         else {
             this.svg.append("rect")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("width", this.width)
+            .attr("height", this.height)
             .attr("fill", "none");
         }
 
@@ -128,12 +130,17 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
             .on('drag', (d) => {
                 d.x = d3.event.x;
                 d.y = d3.event.y;
+                if (d.is === 'hole' || d.is === 'region') {
+                    this.get_visibility(d.x, d.y);
+                }
                 this.redraw();
                 this.model.set('xy', [this.pxOfx.invert(d.x), this.pyOfy.invert(d.y)]);
                 this.touch();
             })
             .on('end', (d) => {
                 this.update_backend();
+                this.polygon.attr('points', []);
+                this.redraw();
             });
 
         // line displayed when dragging new nodes
@@ -429,6 +436,15 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
 
         this.triangle = h.merge(this.triangle);
 
+        this.polygon = this.polygon.data(this.holes, (d) => d.id);
+        this.polygon.selectAll('polygon');
+        this.polygon.exit().remove();
+        let hh = this.polygon.enter().append('svg:polygon')
+            .attr('class', 'polygon')
+            .style('fill', 'lime')
+            .style('fill-opacity', '0.2');
+        this.polygon = hh.merge(this.polygon);
+
         this.redraw();
     }
 
@@ -457,6 +473,7 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
         this.circle = this.svg.append('svg:g').attr('id', 'pslgid').selectAll('g'); // vertices
         this.rect = this.svg.append('svg:g').attr('id', 'pslgid').selectAll('g_rect'); // regions
         this.triangle = this.svg.append('svg:g').attr('id', 'pslgid').selectAll('g_triangle'); // holes
+        this.polygon = this.svg.append('svg:g').attr('id', 'pslgid').selectAll('g_polygon');
         verticesList = this.model.get('vertices');
         vertexFlagsList = this.model.get('vertexFlags');
         this.vertices = [];
@@ -695,12 +712,28 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
         }
     }
 
+    get_visibility(x, y) {
+        let segment_coords = this.segments.map((d) => {
+            let xy0 = [d.source.x, d.source.y];
+            let xy1 = [d.target.x, d.target.y];
+            return [xy0, xy1];
+        });
+        // add bounding box
+        segment_coords.push([[0, 0], [0, this.height]]);
+        segment_coords.push([[0, this.height], [this.width, this.height]]);
+        segment_coords.push([[this.width, this.height], [this.width, 0]]);
+        segment_coords.push([[this.width, 0], [0, 0]]);
+        let polygon = this.visibilityPolygon.compute([x, y], segment_coords);
+        this.polygon.attr('points', polygon);
+    }
+
     add_new: any;
     boundary_type: any;
     circle: any;
     colors: any;
     drag: any;
     dragLine: any;
+    height: any;
     holes: any;
     lastHoleId: any;
     lastKeyDown: any;
@@ -714,6 +747,7 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
     mouseupRegion: any;
     mouseupVertex: any;
     path: any;
+    polygon: any;
     pxOfx: any;
     pyOfy: any;
     rect: any;
@@ -727,4 +761,6 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
     svg: any;
     triangle: any;
     vertices: any;
+    visibilityPolygon;
+    width: any;
 }
