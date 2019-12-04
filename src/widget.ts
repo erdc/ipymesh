@@ -27,7 +27,7 @@ export class PSLGEditorView extends widgets.DOMWidgetView {
 
     render () {
         super.render.apply(this, arguments);
-        this.el.className = "jupyter-widget pslg_widget";
+        this.el.classList.add("pslg_widget");
 
         this.width = this.model.get('width');
         this.height = this.model.get('height');
