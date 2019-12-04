@@ -1,4 +1,4 @@
-svg {
+.pslg_widget svg {
   background-color: #FFF;
   cursor: default;
   -webkit-user-select: none;
@@ -8,53 +8,53 @@ svg {
   user-select: none;
 }
 
-svg:not(.active):not(.ctrl) {
+.pslg_widget svg:not(.active):not(.ctrl) {
   cursor: crosshair;
 }
 
-path.segment{
+.pslg_widget path.segment {
   fill: none;
   stroke-width: 4px;
   cursor: default;
 }
 
-svg:not(.active):not(.ctrl) path.segment{
+.pslg_widget svg:not(.active):not(.ctrl) path.segment{
   cursor: pointer;
 }
 
-path.segment.selected {
+.pslg_widget path.segment.selected {
   stroke-dasharray: 10,2;
 }
 
-path.segment.dragline {
+.pslg_widget path.segment.dragline {
   pointer-events: none;
 }
 
-path.segment.hidden {
+.pslg_widget path.segment.hidden {
   stroke-width: 0;
 }
 
-circle.vertex {
+.pslg_widget circle.vertex {
   stroke-width: 1.5px;
   cursor: pointer;
 }
 
-rect.region {
+.pslg_widget rect.region {
   stroke-width: 1.5px;
   cursor: pointer;
 }
 
-polyline.hole {
+.pslg_widget polyline.hole {
   stroke-width: 1.5px;
   cursor: pointer;
 }
 
-text {
+.pslg_widget text {
   font: 12px sans-serif;
   pointer-events: none;
 }
 
-text.id {
+.pslg_widget text.id {
   text-anchor: middle;
   font-weight: bold;
 }
