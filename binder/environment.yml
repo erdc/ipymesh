@@ -1,7 +1,12 @@
 name: ipymesh
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - ipymesh
+  - matplotlib
+  - ipywidgets
   - pandas
+  - bqplot
+  - ipymesh
+  - pip
+  - pip:
+    - triangle
