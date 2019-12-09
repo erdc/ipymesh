@@ -9,8 +9,8 @@ export class PSLGEditorModel extends widgets.DOMWidgetModel {
             _view_name: 'PSLGEditorView',
             _model_module : 'ipymesh-widgets',
             _view_module : 'ipymesh-widgets',
-            _model_module_version : '0.1.6',
-            _view_module_version : '0.1.6',
+            _model_module_version : '0.1.7',
+            _view_module_version : '0.1.7',
         };
     }
     static serializers = {
