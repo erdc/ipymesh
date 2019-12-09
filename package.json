@@ -1,6 +1,6 @@
 {
   "name": "ipymesh-widgets",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A Custom Mesh Widget Library",
   "keywords": [
     "jupyter",
