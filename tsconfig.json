@@ -1,22 +1,31 @@
 {
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "composite": true,
     "declaration": true,
     "esModuleInterop":true,
+    "incremental": true,
     "lib": ["es2015", "dom"],
+    "jsx": "react",
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmitOnError": true,
+    "noImplicitAny": false,
     "noUnusedLocals": true,
     "outDir": "lib",
     "resolveJsonModule": true,
     "rootDir": "src",
     "skipLibCheck": true,
     "sourceMap": true,
-    "noImplicitAny": false,
-    "target": "es2015"
+    "strict": true,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "target": "es2015",
+    "types": ["jest"]
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx"
-  ]
+    "src/**/*.tsx",
+  ],
+  "exclude": ["src/**/__tests__"]
 }
