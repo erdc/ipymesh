@@ -1,32 +1,45 @@
-import * as widgets from '@jupyter-widgets/base';
 import * as d3 from 'd3';
+import {
+  DOMWidgetModel, DOMWidgetView
+} from '@jupyter-widgets/base';
+
+import {
+  MODULE_NAME, MODULE_VERSION
+} from './version';
+
 import { VisibilityPolygon } from './visibility';
 
-export class PSLGEditorModel extends widgets.DOMWidgetModel {
+export class PSLGEditorModel extends DOMWidgetModel {
     defaults() {
         return {...super.defaults(),
             _model_name: 'PSLGEditorModel',
             _view_name: 'PSLGEditorView',
-            _model_module : 'ipymesh-widgets',
-            _view_module : 'ipymesh-widgets',
-            _model_module_version : '0.1.7',
-            _view_module_version : '0.1.7',
+            _model_module : PSLGEditorModel.model_module,
+            _view_module : PSLGEditorModel.model_module,
+            _model_module_version : PSLGEditorModel.model_module_version,
+            _view_module_version : PSLGEditorModel.model_module_version,
         };
     }
     static serializers = {
-        ...widgets.DOMWidgetModel.serializers,
+        ...DOMWidgetModel.serializers,
     }
+
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+
 }
 
 
-export class PSLGEditorView extends widgets.DOMWidgetView {
+export class PSLGEditorView extends DOMWidgetView {
     initialize () {
-        super.initialize.apply(this, arguments);
+/**        super.initialize.apply(this, arguments);
+*/
         this.visibilityPolygon = new VisibilityPolygon();
     }
 
     render () {
-        super.render.apply(this, arguments);
+/**        super.render.apply(this, arguments);
+*/
         this.el.classList.add("pslg_widget");
 
         this.width = this.model.get('width');
