@@ -7,7 +7,7 @@
   "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/erdc-cm/ipymesh.git"
+    "url": "https://github.com/erdc/ipymesh.git"
   },
   "keywords": [
     "jupyter",
