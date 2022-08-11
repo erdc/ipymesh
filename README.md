@@ -14,7 +14,7 @@ To install use pip:
 
 For a development installation (requires npm),
 
-    $ git clone https://github.com/erdc-cm/ipymesh.git
+    $ git clone https://github.com/erdc/ipymesh.git
     $ cd ipymesh
     $ pip install -e .
     $ jupyter nbextension install --py --symlink --sys-prefix ipymesh
